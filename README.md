@@ -54,8 +54,327 @@ Click “Publish”/“Update” to finish. Copy the generated link and share it
 ## SAMPLE OUTPUT SCREEN
 The screen below shows a sample conversation with the published “Saveetha Engineering College Assistant” Custom GPT, illustrating how it answers a student's admission query using the uploaded knowledge files.
 </br><img width="545" height="385" alt="image" src="https://github.com/user-attachments/assets/677bee25-a510-48db-824d-4dbb5795d610" /></br>
+
+**PROGRAM**
+```
+import re
+import random
+
+knowledge_base = {
+    "courses": [
+        "B.E. Electronics and Communication Engineering",
+        "B.E. Computer Science and Engineering",
+        "B.E. Electrical and Electronics Engineering",
+        "B.E. Mechanical Engineering",
+        "B.Tech Artificial Intelligence and Data Science"
+    ],
+    "admission": [
+        "Visit the official college website.",
+        "Select the required engineering programme.",
+        "Check the eligibility requirements.",
+        "Complete the admission application form.",
+        "Submit the required academic and personal details.",
+        "Upload the required documents.",
+        "Submit the application."
+    ],
+    "eligibility": [
+        "Eligibility depends on the selected programme and admission category.",
+        "Students should check the latest official admission guidelines for exact requirements."
+    ],
+    "fees": [
+        "Fees vary depending on the programme and admission category.",
+        "Students should contact the college or check the official website for the latest fee details."
+    ],
+    "documents": [
+        "Academic certificates and mark sheets",
+        "Identity proof",
+        "Passport-size photographs",
+        "Transfer certificate when applicable",
+        "Other documents specified by the college"
+    ],
+    "placements": [
+        "The college provides placement-related training and recruitment activities.",
+        "Students can contact the placement department for current placement information and recruitment details."
+    ],
+    "hostel": [
+        "Hostel facilities are available for students.",
+        "Current hostel availability, fees and facilities should be verified with the college."
+    ],
+    "location": [
+        "Saveetha Engineering College is located at Thandalam, Chennai, Tamil Nadu."
+    ],
+    "contact": [
+        "For current contact information, students should visit the official Saveetha Engineering College website.",
+        "Official website: https://www.saveetha.ac.in/"
+    ],
+    "about": [
+        "Saveetha Engineering College is an engineering institution located at Thandalam, Chennai, Tamil Nadu."
+    ],
+    "website": [
+        "The official website of Saveetha Engineering College is https://www.saveetha.ac.in/"
+    ]
+}
+
+intents = {
+    "greeting": {
+        "patterns": [
+            r"\bhi\b",
+            r"\bhello\b",
+            r"\bhey\b",
+            r"\bgood morning\b",
+            r"\bgood afternoon\b",
+            r"\bgood evening\b"
+        ],
+        "responses": [
+            "Hello! Welcome to the Saveetha Engineering College Assistant. How can I help you?",
+            "Hi! I can help you with courses, admissions, fees, eligibility, placements, hostel and college information."
+        ]
+    },
+    "courses": {
+        "patterns": [
+            r"\bcourses?\b",
+            r"\bprogrammes?\b",
+            r"\bbranches?\b",
+            r"\bdepartments?\b",
+            r"\bdegrees?\b"
+        ],
+        "responses": [
+            "Saveetha Engineering College offers various undergraduate and postgraduate programmes. Some example programmes are B.E. Electronics and Communication Engineering, B.E. Computer Science and Engineering, B.E. Electrical and Electronics Engineering, B.E. Mechanical Engineering and B.Tech Artificial Intelligence and Data Science."
+        ]
+    },
+    "admission": {
+        "patterns": [
+            r"\badmission\b",
+            r"\bapply\b",
+            r"\bapplication\b",
+            r"\bhow.*join\b",
+            r"\bhow.*admit\b"
+        ],
+        "responses": [
+            "The general admission process involves selecting a programme, checking eligibility, completing the application form, submitting academic and personal details, uploading required documents and submitting the application."
+        ]
+    },
+    "eligibility": {
+        "patterns": [
+            r"\beligibility\b",
+            r"\beligible\b",
+            r"\bqualification\b",
+            r"\bmarks.*required\b",
+            r"\bpercentage\b"
+        ],
+        "responses": [
+            "Eligibility depends on the selected programme and admission category. Please check the latest official admission guidelines for exact requirements."
+        ]
+    },
+    "fees": {
+        "patterns": [
+            r"\bfees?\b",
+            r"\bfee structure\b",
+            r"\bcost\b",
+            r"\btuition\b",
+            r"\bhow much\b"
+        ],
+        "responses": [
+            "Fees vary depending on the programme and admission category. Please check the latest official fee information with the college."
+        ]
+    },
+    "documents": {
+        "patterns": [
+            r"\bdocuments?\b",
+            r"\bcertificate\b",
+            r"\bmarksheet\b",
+            r"\bmark sheet\b",
+            r"\bproof\b"
+        ],
+        "responses": [
+            "Commonly required documents include academic certificates and mark sheets, identity proof, passport-size photographs, transfer certificate when applicable and other documents specified by the college."
+        ]
+    },
+    "placements": {
+        "patterns": [
+            r"\bplacement\b",
+            r"\bplacements\b",
+            r"\bjobs?\b",
+            r"\brecruitment\b",
+            r"\bcompanies\b",
+            r"\bcareer\b"
+        ],
+        "responses": [
+            "Saveetha Engineering College provides placement-related training and recruitment activities. For current placement information and participating companies, students should contact the placement department."
+        ]
+    },
+    "hostel": {
+        "patterns": [
+            r"\bhostel\b",
+            r"\baccommodation\b",
+            r"\broom\b",
+            r"\bstay\b"
+        ],
+        "responses": [
+            "Hostel facilities are available for students. Current hostel availability, fees, rules and facilities should be verified with the college."
+        ]
+    },
+    "location": {
+        "patterns": [
+            r"\bwhere.*college\b",
+            r"\blocation\b",
+            r"\baddress\b",
+            r"\bwhere.*located\b",
+            r"\bwhere.*situated\b"
+        ],
+        "responses": [
+            "Saveetha Engineering College is located at Thandalam, Chennai, Tamil Nadu."
+        ]
+    },
+    "contact": {
+        "patterns": [
+            r"\bcontact\b",
+            r"\bphone\b",
+            r"\btelephone\b",
+            r"\bemail\b",
+            r"\bcontact number\b"
+        ],
+        "responses": [
+            "For the latest contact details, please visit the official Saveetha Engineering College website: https://www.saveetha.ac.in/"
+        ]
+    },
+    "about": {
+        "patterns": [
+            r"\babout.*college\b",
+            r"\bwhat.*college\b",
+            r"\btell.*college\b",
+            r"\bsaveetha engineering college\b"
+        ],
+        "responses": [
+            "Saveetha Engineering College is an engineering institution located at Thandalam, Chennai, Tamil Nadu."
+        ]
+    },
+    "website": {
+        "patterns": [
+            r"\bwebsite\b",
+            r"\bofficial site\b",
+            r"\bofficial website\b",
+            r"\blink\b"
+        ],
+        "responses": [
+            "The official website is https://www.saveetha.ac.in/"
+        ]
+    },
+    "thanks": {
+        "patterns": [
+            r"\bthank you\b",
+            r"\bthanks\b",
+            r"\bthank\b"
+        ],
+        "responses": [
+            "You're welcome! I'm happy to help.",
+            "You're welcome! Feel free to ask another college-related question."
+        ]
+    },
+    "goodbye": {
+        "patterns": [
+            r"\bbye\b",
+            r"\bgoodbye\b",
+            r"\bexit\b",
+            r"\bquit\b"
+        ],
+        "responses": [
+            "Thank you for using the Saveetha Engineering College Assistant. Goodbye!",
+            "Goodbye! Have a great day."
+        ]
+    }
+}
+
+def match_intent(user_input):
+    user_input = user_input.lower().strip()
+
+    for intent, data in intents.items():
+        for pattern in data["patterns"]:
+            if re.search(pattern, user_input):
+                return intent
+
+    return None
+
+def get_response(user_input):
+    intent = match_intent(user_input)
+
+    if intent:
+        return random.choice(intents[intent]["responses"])
+
+    return "I'm sorry, I don't have information about that. I can help with Saveetha Engineering College courses, admissions, eligibility, fees, documents, placements, hostel, location and contact information."
+
+def display_knowledge_base():
+    print("\nSAVEETHA ENGINEERING COLLEGE KNOWLEDGE BASE")
+    print("=" * 60)
+
+    for category, information in knowledge_base.items():
+        print(f"\n{category.upper()}")
+        for item in information:
+            print(f"- {item}")
+
+def run_sample_queries():
+    questions = [
+        "Hello",
+        "What courses are offered?",
+        "How can I apply for admission?",
+        "What is the eligibility?",
+        "What are the fees?",
+        "What documents are required?",
+        "Tell me about placements",
+        "Is hostel available?",
+        "Where is the college located?",
+        "How can I contact the college?",
+        "What is the official website?",
+        "Thank you"
+    ]
+
+    print("\nSAMPLE CHATBOT TESTING")
+    print("=" * 60)
+
+    for question in questions:
+        print(f"\nUser: {question}")
+        print(f"Assistant: {get_response(question)}")
+
+def chat():
+    print("\n" + "=" * 60)
+    print("SAVEETHA ENGINEERING COLLEGE AI ASSISTANT")
+    print("=" * 60)
+    print("Ask questions about admissions, courses, fees, eligibility,")
+    print("documents, placements, hostel, location or contact details.")
+    print("Type 'bye' or 'exit' to end the conversation.")
+
+    while True:
+        user_input = input("\nYou: ").strip()
+
+        if not user_input:
+            print("Assistant: Please enter a question.")
+            continue
+
+        response = get_response(user_input)
+        print("Assistant:", response)
+
+        if match_intent(user_input) == "goodbye":
+            break
+
+print("SAVEETHA ENGINEERING COLLEGE CUSTOM GPT DEMONSTRATION")
+print("=" * 60)
+
+run_sample_queries()
+chat()
+```
+
 ## OUTPUT
-A working Custom GPT named “Saveetha Engineering College Assistant” is created and published. When a user asks questions like “What courses does Saveetha offer?” or “How can I apply for B.Tech admission?”, the GPT replies with accurate information drawn from the uploaded college knowledge files, in a friendly and professional tone.
+
+<img width="1021" height="277" alt="image" src="https://github.com/user-attachments/assets/4433d3f5-
+a542-4536-8b81-c5931f1569f2" />
+
+<img width="1699" height="488" alt="image" src="https://github.com/user-attachments/assets/9bc51630-48de-482c-bf88-5364d670e625" />
+
+**SAMPLE OUTPUT**
+
+<img width="1680" height="873" alt="image" src="https://github.com/user-attachments/assets/58c887ad-f882-417e-b711-60b5ee8c58fd" />
+
+
 ## RESULT
 Thus, a Custom GPT chatbot for Saveetha Engineering College was successfully designed, configured with knowledge files and instructions, tested, and published using OpenAI's GPT
 Builder.
